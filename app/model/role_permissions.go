@@ -9,5 +9,4 @@ type RolePermission struct {
 	PermissionID int64 `bun:"permission_id,notnull" json:"permission_id"` // FK ใช้ชื่อปกติ
 
 	CreateUpdateUnixTimestamp
-	SoftDelete
 }

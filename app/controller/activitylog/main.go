@@ -1,13 +1,13 @@
 package activitylog
 
-import "github.com/uptrace/bun"
+import "app/app/provider/database"
 
 type Controller struct {
 	Name    string
 	Service *Service
 }
 
-func NewController(db *bun.DB) *Controller {
+func NewController(db *database.MongoDB) *Controller {
 	return &Controller{
 		Name:    `activity-log-ctl`,
 		Service: NewService(db),
@@ -15,10 +15,10 @@ func NewController(db *bun.DB) *Controller {
 }
 
 type Service struct {
-	db *bun.DB
+	db *database.MongoDB
 }
 
-func NewService(db *bun.DB) *Service {
+func NewService(db *database.MongoDB) *Service {
 	return &Service{
 		db: db,
 	}

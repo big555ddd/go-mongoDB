@@ -10,5 +10,4 @@ type Permission struct {
 	Description    string `bun:"description" json:"description"`
 
 	CreateUpdateUnixTimestamp
-	SoftDelete
 }

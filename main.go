@@ -37,7 +37,6 @@ func command() error {
 	cmda.AddCommand(cmds)
 	cmds.AddCommand(console.Commands()...)
 	cmda.AddCommand(cmd.HttpCmd())
-	cmda.AddCommand(cmd.Migrate())
 
 	return cmda.Execute()
 }

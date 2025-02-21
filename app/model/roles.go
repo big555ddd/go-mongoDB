@@ -10,5 +10,4 @@ type Role struct {
 	Description string `bun:"description" json:"description"`
 
 	CreateUpdateUnixTimestamp
-	SoftDelete
 }

@@ -5,20 +5,16 @@ import (
 )
 
 type CreateUpdateUnixTimestamp struct {
-	CreateUnixTimestamp
-	UpdateUnixTimestamp
+	CreateUnixTimestamp `bson:",inline"`
+	UpdateUnixTimestamp `bson:",inline"`
 }
 
 type CreateUnixTimestamp struct {
-	CreatedAt int64 `json:"created_at" bun:",notnull,default:EXTRACT(EPOCH FROM NOW())"`
+	CreatedAt int64 `json:"created_at" bson:"created_at"` // ลบ bun tags
 }
 
 type UpdateUnixTimestamp struct {
-	UpdatedAt int64 `json:"updated_at" bun:",notnull,default:EXTRACT(EPOCH FROM NOW())"`
-}
-
-type SoftDelete struct {
-	DeletedAt *time.Time `json:"deleted_at" bun:",soft_delete,nullzero"`
+	UpdatedAt int64 `json:"updated_at" bson:"updated_at"` // ลบ bun tags
 }
 
 func (t *CreateUnixTimestamp) SetCreated(ts int64) {
@@ -44,11 +40,11 @@ type CreateUpdateMilliTimestamp struct {
 }
 
 type CreateMilliTimestamp struct {
-	CreatedAt int64 `json:"created_at" bun:",notnull,default:EXTRACT(EPOCH FROM NOW())"`
+	CreatedAt int64 `json:"created_at" bson:"created_at"` // ลบ bun tags
 }
 
 type UpdateMilliTimestamp struct {
-	UpdatedAt int64 `json:"updated_at" bun:",notnull,default:EXTRACT(EPOCH FROM NOW())"`
+	UpdatedAt int64 `json:"updated_at" bson:"updated_at"` // ลบ bun tags
 }
 
 func (t *CreateMilliTimestamp) SetCreated(ts int64) {

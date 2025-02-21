@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func (ctl *Controller) Create(c *gin.Context) {
@@ -49,7 +50,12 @@ func (ctl *Controller) Get(c *gin.Context) {
 		return
 	}
 
-	user, err := ctl.Service.Get(c.Request.Context(), id)
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		response.InternalError(c, err.Error())
+	}
+
+	user, err := ctl.Service.Get(c.Request.Context(), objID)
 	if err != nil {
 		response.InternalError(c, err.Error())
 		return
@@ -64,13 +70,18 @@ func (ctl *Controller) Update(c *gin.Context) {
 		response.BadRequest(c, "id is required")
 		return
 	}
+
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		response.InternalError(c, err.Error())
+	}
 	var req request.UpdateUser
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	_, err := ctl.Service.Update(c.Request.Context(), req, id)
+	_, err = ctl.Service.Update(c.Request.Context(), req, objID)
 	if err != nil {
 		response.InternalError(c, err.Error())
 		return
@@ -86,7 +97,12 @@ func (ctl *Controller) Delete(c *gin.Context) {
 		return
 	}
 
-	err := ctl.Service.Delete(c.Request.Context(), id)
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		response.InternalError(c, err.Error())
+	}
+
+	err = ctl.Service.Delete(c.Request.Context(), objID)
 	if err != nil {
 		response.InternalError(c, err.Error())
 		return

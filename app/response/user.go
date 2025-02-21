@@ -1,19 +1,13 @@
 package response
 
 type UserResponse struct {
-	ID        uint   `json:"id"`
-	Username  string `json:"username"`
-	Firstname string `json:"firstname"`
-	Lastname  string `json:"lastname"`
-	Nickname  string `json:"nickname"`
-	Email     string `json:"email"`
-	RoleID    uint   `json:"role_id"`
-	Status    string `json:"status"`
-}
-
-type UserListResponse struct {
-	Users      []UserResponse `json:"users"`
-	Pagination Pagination     `json:"pagination"`
+	ID          string `bson:"_id,omitempty" json:"id"` // เปลี่ยนเป็น _id สำหรับ MongoDB
+	Username    string `bson:"username" json:"username"`
+	Email       string `bson:"email" json:"email"`
+	FirstName   string `bson:"first_name" json:"first_name"`
+	LastName    string `bson:"last_name" json:"last_name"`
+	DisplayName string `bson:"display_name" json:"display_name"`
+	RoleID      int64  `bson:"role_id" json:"role_id"`
 }
 
 type GetUserDetail struct {

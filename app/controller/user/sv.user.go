@@ -4,39 +4,43 @@ import (
 	"app/app/enum"
 	"app/app/model"
 	"app/app/request"
+	"app/app/response"
 	"context"
 	"errors"
 
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func (s *Service) Create(ctx context.Context, req request.CreateUser) (*model.User, error) {
-	// Check if the user already exists
-	ex, err := s.db.NewSelect().Model(&model.User{}).Where("username = ?", req.Username).Exists(ctx)
+	// Check if username exists
+	count, err := s.db.DB.Collection("users").CountDocuments(ctx, bson.M{"username": req.Username})
 	if err != nil {
 		return nil, err
 	}
-
-	if ex {
+	if count > 0 {
 		return nil, errors.New("username already exists")
 	}
 
-	ex, err = s.db.NewSelect().Model(&model.User{}).Where("email = ?", req.Email).Exists(ctx)
+	// Check if email exists
+	count, err = s.db.DB.Collection("users").CountDocuments(ctx, bson.M{"email": req.Email})
 	if err != nil {
 		return nil, err
 	}
-
-	if ex {
+	if count > 0 {
 		return nil, errors.New("email already exists")
 	}
 
-	// Hash the password
+	// Hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
 	}
 
-	// Create the user
+	// Create user
 	user := &model.User{
 		Username:    req.Username,
 		Email:       req.Email,
@@ -47,62 +51,85 @@ func (s *Service) Create(ctx context.Context, req request.CreateUser) (*model.Us
 		RoleID:      1,
 		Status:      enum.STATUS_ACTIVE,
 	}
-	if _, err := s.db.NewInsert().Model(user).Exec(ctx); err != nil {
+	user.SetCreatedNow()
+	user.SetUpdateNow()
+
+	// Insert to MongoDB
+	_, err = s.db.DB.Collection("users").InsertOne(ctx, user)
+	if err != nil {
 		return nil, err
 	}
 
 	return user, nil
 }
 
-func (s *Service) List(ctx context.Context, limit, page int, search string, roleID string, status string, planType string) ([]model.User, int, error) {
-	var offset int
+func (s *Service) List(ctx context.Context, limit, page int, search string, roleID string, status string, planType string) ([]response.UserResponse, int, error) {
+	var offset int64
 	if page > 1 {
-		offset = (page - 1) * limit
-	} else {
-		offset = 0
+		offset = int64((page - 1) * limit)
 	}
-	users := []model.User{}
-	query := s.db.NewSelect().Model(&users)
+
+	filter := bson.M{}
 	if search != "" {
-		query.Where("first_name LIKE ? OR display_name LIKE ?", "%"+search+"%", "%"+search+"%")
+		filter["$or"] = []bson.M{
+			{"first_name": bson.M{"$regex": search, "$options": "i"}},
+			{"display_name": bson.M{"$regex": search, "$options": "i"}},
+		}
 	}
 	if roleID != "" {
-		query.Where("role_id = ?", roleID)
+		filter["role_id"] = roleID
 	}
 	if status != "" {
-		query.Where("status = ?", status)
+		filter["status"] = status
 	}
-	query.Limit(limit).Offset(offset).
-		Order("created_at ASC")
-	if err := query.Scan(ctx); err != nil {
+
+	opts := options.Find().
+		SetLimit(int64(limit)).
+		SetSkip(offset).
+		SetSort(bson.M{"created_at": 1})
+
+	cursor, err := s.db.DB.Collection("users").Find(ctx, filter, opts)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer cursor.Close(ctx)
+
+	var res []response.UserResponse
+	if err = cursor.All(ctx, &res); err != nil {
 		return nil, 0, err
 	}
 
-	total, err := s.db.NewSelect().Model(&model.User{}).Count(ctx)
+	// Get total count
+	total, err := s.db.DB.Collection("users").CountDocuments(ctx, filter)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	return users, total, nil
+	return res, int(total), nil
 }
 
-func (s *Service) Get(ctx context.Context, id string) (*model.User, error) {
+func (s *Service) Get(ctx context.Context, id primitive.ObjectID) (*response.UserResponse, error) {
+	res := new(response.UserResponse)
+	err := s.db.DB.Collection("users").FindOne(ctx, bson.M{"_id": id}).Decode(res)
+	if err == mongo.ErrNoDocuments {
+		return nil, errors.New("user not found")
+	}
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
 
-	user := model.User{ID: id}
-	if err := s.db.NewSelect().Model(&user).WherePK().Scan(ctx); err != nil {
+func (s *Service) Update(ctx context.Context, req request.UpdateUser, id primitive.ObjectID) (*model.User, error) {
+	var user model.User
+	err := s.db.DB.Collection("users").FindOne(ctx, bson.M{"_id": id}).Decode(&user)
+	if err == mongo.ErrNoDocuments {
+		return nil, errors.New("user not found")
+	}
+	if err != nil {
 		return nil, err
 	}
 
-	return &user, nil
-}
-
-func (s *Service) Update(ctx context.Context, req request.UpdateUser, id string) (*model.User, error) {
-
-	user := model.User{}
-	if err := s.db.NewSelect().Model(&user).Where("id = ?", id).Scan(ctx); err != nil {
-		return nil, err
-	}
-	// Hash the password
 	if req.Password != "" {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 		if err != nil {
@@ -111,23 +138,27 @@ func (s *Service) Update(ctx context.Context, req request.UpdateUser, id string)
 		user.Password = string(hashedPassword)
 	}
 
-	user.FirstName = req.FirstName
-	user.LastName = req.LastName
-	user.DisplayName = req.DisplayName
+	user = model.User{
+		FirstName:   req.FirstName,
+		LastName:    req.LastName,
+		DisplayName: req.DisplayName,
+	}
 
-	if _, err := s.db.NewUpdate().Model(&user).Where("id = ?", id).Exec(ctx); err != nil {
+	user.SetCreated(user.CreatedAt)
+	user.SetUpdateNow()
+
+	_, err = s.db.DB.Collection("users").UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": user})
+	if err != nil {
 		return nil, err
 	}
 
 	return &user, nil
 }
 
-func (s *Service) Delete(ctx context.Context, id string) error {
-
-	user := model.User{ID: id}
-	if _, err := s.db.NewDelete().Model(&user).WherePK().Exec(ctx); err != nil {
+func (s *Service) Delete(ctx context.Context, id primitive.ObjectID) error {
+	_, err := s.db.DB.Collection("users").DeleteOne(ctx, bson.M{"_id": id})
+	if err != nil {
 		return err
 	}
-
 	return nil
 }

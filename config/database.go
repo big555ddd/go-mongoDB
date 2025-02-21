@@ -3,56 +3,50 @@ package config
 import (
 	pdb "app/app/provider/database"
 	"log"
+	"strconv"
 	"sync"
-
-	"github.com/uptrace/bun"
 )
 
 func Database() {
 	// Connect to database
+	srv, _ := strconv.ParseBool(confString("DB_SRV", "false")) // อ่าน DB_SRV, default เป็น false
 	pdb.Register(
 		&db,
 		&pdb.DBOption{
 			Host:     confString("DB_HOST", "127.0.0.1"),
-			Port:     confInt64("DB_PORT", int64(5432)),
+			Port:     confInt64("DB_PORT", int64(27017)),
 			Database: confString("DB_DATABASE", "Database"),
-			Username: confString("DB_USER", "postgres"),
+			Username: confString("DB_USER", ""),
 			Password: confString("DB_PASSWORD", ""),
-			TimeZone: confString("TZ", "Asia/Bangkok"),
-			SSLMode:  confString("DB_SSLMODE", "disable"),
+			SRV:      srv, // เพิ่ม SRV เข้าไปใน DBOption
 		},
 	)
 	log.Println("database connected success")
-
 }
 
 var (
-	db     *bun.DB
-	dbMap  = make(map[string]*bun.DB) // Initialize the dbMap
+	db     *pdb.MongoDB
+	dbMap  = make(map[string]*pdb.MongoDB)
 	dbLock sync.RWMutex
 )
 
-func GetDB() *bun.DB {
+func GetDB() *pdb.MongoDB {
 	return db
 }
 
-func DB(name ...string) *bun.DB {
+func DB(name ...string) *pdb.MongoDB {
 	dbLock.RLock()
 	defer dbLock.RUnlock()
 	if dbMap == nil {
-		panic("database not initialized") // Panic if dbMap is nil
+		panic("database not initialized")
 	}
 	if len(name) == 0 {
-		return dbMap["default"] // Return the default database
+		return dbMap["default"]
 	}
 
 	db, ok := dbMap[name[0]]
 	if !ok {
-		panic("database not initialized") // Panic if the specified database is not found
+		panic("database not initialized")
 	}
 	return db
 }
-
-// func GetDB2() *bun.DB {
-// 	return db2
-// }
