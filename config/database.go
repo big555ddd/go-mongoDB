@@ -2,7 +2,7 @@ package config
 
 import (
 	pdb "app/app/provider/database"
-	"log"
+	"app/internal/logger"
 	"strconv"
 	"sync"
 
@@ -10,8 +10,7 @@ import (
 )
 
 func Database() {
-	// Connect to database
-	srv, _ := strconv.ParseBool(confString("DB_SRV", "false")) // อ่าน DB_SRV, default เป็น false
+	srv, _ := strconv.ParseBool(confString("DB_SRV", "false"))
 	pdb.Register(
 		&db,
 		&pdb.DBOption{
@@ -20,10 +19,10 @@ func Database() {
 			Database: confString("DB_DATABASE", "Database"),
 			Username: confString("DB_USER", ""),
 			Password: confString("DB_PASSWORD", ""),
-			SRV:      srv, // เพิ่ม SRV เข้าไปใน DBOption
+			SRV:      srv,
 		},
 	)
-	log.Println("database connected success")
+	logger.Info("database connected success")
 }
 
 var (

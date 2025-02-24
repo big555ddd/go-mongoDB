@@ -13,6 +13,6 @@ func OAuth() {
 		ClientSecret: confString("CLIENT_SECRET", ""),
 		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email"},
 	})
-	logger.Infof("OAuth configuration initialized")
+	logger.Info("OAuth configuration initialized")
 
 }

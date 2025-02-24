@@ -17,7 +17,7 @@ func Router(app *gin.Engine) {
 
 	// Health check endpoint
 	app.GET("/healthz", func(ctx *gin.Context) {
-		logger.Infof("Health check passed")
+		logger.Info("Health check passed")
 		ctx.JSON(http.StatusOK, gin.H{"status": "Health check passed.", "message": "Welcome to Project-k API."})
 	})
 

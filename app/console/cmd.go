@@ -12,7 +12,7 @@ func helloCmd() *cobra.Command {
 		Use:  "hello",
 		Args: cmd.NotReqArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			logger.Infof("Hello, world")
+			logger.Info("Hello, world")
 		},
 	}
 	return cmd

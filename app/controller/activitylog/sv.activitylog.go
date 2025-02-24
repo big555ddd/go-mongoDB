@@ -10,7 +10,7 @@ import (
 
 func (s *Service) Create(ctx context.Context, req model.ActivityLog) (*model.ActivityLog, error) {
 	if _, err := s.db.Collection("activity_logs").InsertOne(ctx, &req); err != nil {
-		logger.Infof("[error]: %v", err)
+		logger.Err(err.Error())
 		return nil, err
 	}
 	return &req, nil

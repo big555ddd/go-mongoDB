@@ -1,7 +1,7 @@
 package config
 
 import (
-	"log"
+	"app/internal/logger"
 	"os"
 	"strconv"
 
@@ -28,7 +28,7 @@ func confInt64(key string, defaultValue int64) int64 {
 		valueStr := viper.GetString(key)
 		valueInt, err := strconv.ParseInt(valueStr, 10, 64)
 		if err != nil {
-			log.Printf("Error converting %s to int64: %v", key, err)
+			logger.Infof("Error converting %s to int64: %v", key, err)
 			return defaultValue
 		}
 		return valueInt

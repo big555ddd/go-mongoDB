@@ -44,8 +44,6 @@ func InitLogger() {
 		encoderConfig := ecszap.NewDefaultEncoderConfig()
 		core := ecszap.NewCore(encoderConfig, os.Stdout, zap.DebugLevel)
 		logVal.logger = zap.New(core, zapOption...)
-		log.Println("Logger production initialized")
-
 	} else {
 		var err error
 		logVal.logger, err = zap.NewDevelopment(zap.Fields(
@@ -54,8 +52,6 @@ func InitLogger() {
 		if err != nil {
 			panic(err)
 		}
-		log.Println("Logger development initialized")
-
 	}
 }
 
@@ -72,10 +68,6 @@ func (log *Logger) clone() *Logger {
 
 func Infof(format string, v ...interface{}) {
 	log.Printf(format, v...)
-}
-func Init() {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	log.Println("Logger initialized")
 }
 func (log *Logger) Info(v ...interface{}) {
 	log.WithOptions(zap.AddCallerSkip(1)).output(LogInfoLevel, fmt.Sprint(v...))
