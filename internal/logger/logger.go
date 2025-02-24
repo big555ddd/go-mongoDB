@@ -3,7 +3,10 @@ package logger
 import (
 	"fmt"
 	"log"
+	"os"
 
+	"github.com/spf13/viper"
+	"go.elastic.co/ecszap"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -25,6 +28,36 @@ const (
 	// Messages that are used when debugging programs
 	LogDebugLevel
 )
+
+func InitLogger() {
+	if viper.GetString("APP_ENV") == "production" {
+		zapOption := []zap.Option{
+			zap.Fields(
+				zap.String("app", viper.GetString("APP_NAME")),
+			),
+			zap.AddCaller(),
+		}
+		if viper.GetBool("DEBUG") {
+			zapOption = append(zapOption, zap.Development())
+		}
+
+		encoderConfig := ecszap.NewDefaultEncoderConfig()
+		core := ecszap.NewCore(encoderConfig, os.Stdout, zap.DebugLevel)
+		logVal.logger = zap.New(core, zapOption...)
+		log.Println("Logger production initialized")
+
+	} else {
+		var err error
+		logVal.logger, err = zap.NewDevelopment(zap.Fields(
+			zap.String("app", viper.GetString("APP_NAME")),
+		))
+		if err != nil {
+			panic(err)
+		}
+		log.Println("Logger development initialized")
+
+	}
+}
 
 type LogLevel int
 

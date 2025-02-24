@@ -56,10 +56,12 @@ func (s *Service) Create(ctx context.Context, req request.CreateUser) (*model.Us
 	user.SetUpdateNow()
 
 	// Insert to MongoDB
-	_, err = s.db.Collection("users").InsertOne(ctx, user)
+	data, err := s.db.Collection("users").InsertOne(ctx, user)
 	if err != nil {
 		return nil, err
 	}
+
+	user.ID = data.InsertedID.(primitive.ObjectID).Hex()
 
 	return user, nil
 }
@@ -157,9 +159,9 @@ func (s *Service) Update(ctx context.Context, req request.UpdateUser, id primiti
 }
 
 func (s *Service) Delete(ctx context.Context, id primitive.ObjectID) error {
-	_, err := s.db.Collection("users").DeleteOne(ctx, bson.M{"_id": id})
+	err := s.db.Collection("users").FindOneAndDelete(ctx, bson.M{"_id": id})
 	if err != nil {
-		return err
+		return err.Err()
 	}
 	return nil
 }

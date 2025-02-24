@@ -74,6 +74,7 @@ func (ctl *Controller) Update(c *gin.Context) {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		response.InternalError(c, err.Error())
+		return
 	}
 	var req request.UpdateUser
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -100,6 +101,7 @@ func (ctl *Controller) Delete(c *gin.Context) {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		response.InternalError(c, err.Error())
+		return
 	}
 
 	err = ctl.Service.Delete(c.Request.Context(), objID)

@@ -164,6 +164,9 @@ github.com/pelletier/go-toml/v2/internal/characters
 github.com/pelletier/go-toml/v2/internal/danger
 github.com/pelletier/go-toml/v2/internal/tracker
 github.com/pelletier/go-toml/v2/unstable
+# github.com/pkg/errors v0.9.1
+## explicit
+github.com/pkg/errors
 # github.com/redis/go-redis/v9 v9.6.1
 ## explicit; go 1.18
 github.com/redis/go-redis/v9
@@ -258,6 +261,10 @@ github.com/xdg-go/stringprep
 # github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78
 ## explicit; go 1.17
 github.com/youmark/pkcs8
+# go.elastic.co/ecszap v1.0.3
+## explicit; go 1.20
+go.elastic.co/ecszap
+go.elastic.co/ecszap/internal
 # go.mongodb.org/mongo-driver v1.17.2
 ## explicit; go 1.18
 go.mongodb.org/mongo-driver/bson
@@ -333,17 +340,19 @@ go.opentelemetry.io/otel/trace
 go.opentelemetry.io/otel/trace/embedded
 # go.uber.org/atomic v1.9.0
 ## explicit; go 1.13
-go.uber.org/atomic
-# go.uber.org/multierr v1.9.0
+# go.uber.org/multierr v1.10.0
 ## explicit; go 1.19
 go.uber.org/multierr
-# go.uber.org/zap v1.21.0
-## explicit; go 1.13
+# go.uber.org/zap v1.27.0
+## explicit; go 1.19
 go.uber.org/zap
 go.uber.org/zap/buffer
+go.uber.org/zap/internal
 go.uber.org/zap/internal/bufferpool
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
+go.uber.org/zap/internal/pool
+go.uber.org/zap/internal/stacktrace
 go.uber.org/zap/zapcore
 # golang.org/x/arch v0.8.0
 ## explicit; go 1.18
