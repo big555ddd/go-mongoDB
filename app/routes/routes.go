@@ -36,9 +36,6 @@ func Router(app *gin.Engine) {
 
 	// Create a new group for /api/v1
 	apiV1 := app.Group("/api/v1")
-
-	// Define groups of routes under /api/v1
-	// Auth(apiV1.Group("/auth"))
 	User(apiV1.Group("/users"))
 
 }

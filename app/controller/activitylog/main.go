@@ -1,13 +1,13 @@
 package activitylog
 
-import "app/app/provider/database"
+import "go.mongodb.org/mongo-driver/mongo"
 
 type Controller struct {
 	Name    string
 	Service *Service
 }
 
-func NewController(db *database.MongoDB) *Controller {
+func NewController(db *mongo.Database) *Controller {
 	return &Controller{
 		Name:    `activity-log-ctl`,
 		Service: NewService(db),
@@ -15,10 +15,10 @@ func NewController(db *database.MongoDB) *Controller {
 }
 
 type Service struct {
-	db *database.MongoDB
+	db *mongo.Database
 }
 
-func NewService(db *database.MongoDB) *Service {
+func NewService(db *mongo.Database) *Service {
 	return &Service{
 		db: db,
 	}

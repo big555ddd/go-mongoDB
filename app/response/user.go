@@ -8,15 +8,5 @@ type UserResponse struct {
 	LastName    string `bson:"last_name" json:"last_name"`
 	DisplayName string `bson:"display_name" json:"display_name"`
 	RoleID      int64  `bson:"role_id" json:"role_id"`
-}
-
-type GetUserDetail struct {
-	ID        uint   `json:"id"`
-	Username  string `json:"username"`
-	Firstname string `json:"firstname"`
-	Nickname  string `json:"nickname"`
-	Lastname  string `json:"lastname"`
-	Email     string `json:"email"`
-	RoleID    uint   `json:"role_id"`
-	Point     int64  `json:"points"`
+	Status      string `bson:"status" json:"status"`
 }

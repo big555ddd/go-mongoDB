@@ -5,6 +5,7 @@ import (
 	"app/app/model"
 	"app/app/request"
 	"app/app/response"
+	utils "app/app/util"
 	"context"
 	"errors"
 
@@ -17,7 +18,7 @@ import (
 
 func (s *Service) Create(ctx context.Context, req request.CreateUser) (*model.User, error) {
 	// Check if username exists
-	count, err := s.db.DB.Collection("users").CountDocuments(ctx, bson.M{"username": req.Username})
+	count, err := s.db.Collection("users").CountDocuments(ctx, bson.M{"username": req.Username})
 	if err != nil {
 		return nil, err
 	}
@@ -26,7 +27,7 @@ func (s *Service) Create(ctx context.Context, req request.CreateUser) (*model.Us
 	}
 
 	// Check if email exists
-	count, err = s.db.DB.Collection("users").CountDocuments(ctx, bson.M{"email": req.Email})
+	count, err = s.db.Collection("users").CountDocuments(ctx, bson.M{"email": req.Email})
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +36,7 @@ func (s *Service) Create(ctx context.Context, req request.CreateUser) (*model.Us
 	}
 
 	// Hash password
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	hashedPassword, err := utils.HashPassword(req.Password)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +56,7 @@ func (s *Service) Create(ctx context.Context, req request.CreateUser) (*model.Us
 	user.SetUpdateNow()
 
 	// Insert to MongoDB
-	_, err = s.db.DB.Collection("users").InsertOne(ctx, user)
+	_, err = s.db.Collection("users").InsertOne(ctx, user)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +89,7 @@ func (s *Service) List(ctx context.Context, limit, page int, search string, role
 		SetSkip(offset).
 		SetSort(bson.M{"created_at": 1})
 
-	cursor, err := s.db.DB.Collection("users").Find(ctx, filter, opts)
+	cursor, err := s.db.Collection("users").Find(ctx, filter, opts)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -100,7 +101,7 @@ func (s *Service) List(ctx context.Context, limit, page int, search string, role
 	}
 
 	// Get total count
-	total, err := s.db.DB.Collection("users").CountDocuments(ctx, filter)
+	total, err := s.db.Collection("users").CountDocuments(ctx, filter)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -110,7 +111,7 @@ func (s *Service) List(ctx context.Context, limit, page int, search string, role
 
 func (s *Service) Get(ctx context.Context, id primitive.ObjectID) (*response.UserResponse, error) {
 	res := new(response.UserResponse)
-	err := s.db.DB.Collection("users").FindOne(ctx, bson.M{"_id": id}).Decode(res)
+	err := s.db.Collection("users").FindOne(ctx, bson.M{"_id": id}).Decode(res)
 	if err == mongo.ErrNoDocuments {
 		return nil, errors.New("user not found")
 	}
@@ -122,7 +123,7 @@ func (s *Service) Get(ctx context.Context, id primitive.ObjectID) (*response.Use
 
 func (s *Service) Update(ctx context.Context, req request.UpdateUser, id primitive.ObjectID) (*model.User, error) {
 	var user model.User
-	err := s.db.DB.Collection("users").FindOne(ctx, bson.M{"_id": id}).Decode(&user)
+	err := s.db.Collection("users").FindOne(ctx, bson.M{"_id": id}).Decode(&user)
 	if err == mongo.ErrNoDocuments {
 		return nil, errors.New("user not found")
 	}
@@ -147,7 +148,7 @@ func (s *Service) Update(ctx context.Context, req request.UpdateUser, id primiti
 	user.SetCreated(user.CreatedAt)
 	user.SetUpdateNow()
 
-	_, err = s.db.DB.Collection("users").UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": user})
+	_, err = s.db.Collection("users").UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": user})
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +157,7 @@ func (s *Service) Update(ctx context.Context, req request.UpdateUser, id primiti
 }
 
 func (s *Service) Delete(ctx context.Context, id primitive.ObjectID) error {
-	_, err := s.db.DB.Collection("users").DeleteOne(ctx, bson.M{"_id": id})
+	_, err := s.db.Collection("users").DeleteOne(ctx, bson.M{"_id": id})
 	if err != nil {
 		return err
 	}

@@ -12,6 +12,7 @@ type CreateUser struct {
 	FirstName   string `json:"first_name" bson:"first_name"`
 	LastName    string `json:"last_name" bson:"last_name"`
 	DisplayName string `json:"display_name" bson:"display_name"`
+	Status      string `json:"status" bson:"status"`
 }
 
 type UpdateUser struct {

@@ -5,6 +5,8 @@ import (
 	"log"
 	"strconv"
 	"sync"
+
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func Database() {
@@ -30,8 +32,8 @@ var (
 	dbLock sync.RWMutex
 )
 
-func GetDB() *pdb.MongoDB {
-	return db
+func GetDB() *mongo.Database {
+	return db.DB
 }
 
 func DB(name ...string) *pdb.MongoDB {
@@ -40,6 +42,7 @@ func DB(name ...string) *pdb.MongoDB {
 	if dbMap == nil {
 		panic("database not initialized")
 	}
+
 	if len(name) == 0 {
 		return dbMap["default"]
 	}

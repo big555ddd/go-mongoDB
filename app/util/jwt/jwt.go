@@ -1,21 +1,14 @@
 package jwt
 
 import (
+	"app/app/model"
+	"app/internal/logger"
 	"errors"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 	"github.com/spf13/viper"
 )
-
-const (
-	ContextUser = "AUTH_USER"
-)
-
-type UserPayload struct {
-	UserID uuid.UUID `json:"user_id"`
-}
-type SigningMethodHMAC = jwt.SigningMethodHMAC
 
 // VerifyToken verifies the JWT token and returns the claims as a map or an error
 func VerifyToken(raw string) (map[string]any, error) {
@@ -27,7 +20,7 @@ func VerifyToken(raw string) (map[string]any, error) {
 		}
 
 		// Use the secret key from the configuration
-		secret := []byte(viper.GetString("TOKEN_SECRET_USER"))
+		secret := []byte(viper.GetString("TOKEN_SECRET_KEY"))
 		return secret, nil
 	})
 
@@ -47,12 +40,32 @@ func VerifyToken(raw string) (map[string]any, error) {
 	return nil, errors.New("invalid token")
 }
 
-func CreateToken(claims jwt.MapClaims, secretKey string) (string, error) {
+func CreateToken(user *model.User) (string, error) {
 	// Create a new token object
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenDurationStr := viper.GetString("TOKEN_DURATION")
+	secret := []byte(viper.GetString("TOKEN_SECRET_KEY"))
+	tokenDuration, err := time.ParseDuration(tokenDurationStr)
+	if err != nil {
+		logger.Err("[error]: %w", err)
+		return "", err
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 
+		"sub": jwt.MapClaims{
+			"id":           user.ID,
+			"username":     user.Username,
+			"password":     user.Password,
+			"email":        user.Email,
+			"first_name":   user.FirstName,
+			"last_name":    user.LastName,
+			"display_name": user.DisplayName,
+			"role_id":      user.RoleID,
+			"status":       user.Status,
+		},
+		"nbf": time.Now().Unix(),
+		"exp": time.Now().Add(tokenDuration).Unix(),
+	})
 	// Generate encoded token and send it as response
-	secret := []byte(secretKey)
 	tokenString, err := token.SignedString(secret)
 	if err != nil {
 		return "", err
