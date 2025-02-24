@@ -7,8 +7,7 @@ import (
 )
 
 func User(router *gin.RouterGroup) {
-	// Get the *bun.DB instance from config
-	ctl := controller.New() // Pass the *bun.DB to the controller
+	ctl := controller.New()
 	// md := middleware.AuthMiddleware()
 	// log := middleware.NewLogResponse()
 	user := router.Group("")

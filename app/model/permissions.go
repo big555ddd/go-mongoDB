@@ -5,9 +5,9 @@ import "github.com/uptrace/bun"
 type Permission struct {
 	bun.BaseModel `bun:"table:permissions"`
 
-	ID            int64  `bun:",pk,autoincrement" json:"id"`   // ใช้ ID สำหรับ Primary Key
-	PermissionName string `bun:"permission_name,notnull" json:"permission_name"`
-	Description    string `bun:"description" json:"description"`
+	ID             int64  `bson:",pk,autoincrement" json:"id"` // ใช้ ID สำหรับ Primary Key
+	PermissionName string `bson:"permission_name" json:"permission_name"`
+	Description    string `bson:"description" json:"description"`
 
-	CreateUpdateUnixTimestamp
+	CreateUpdateUnixTimestamp `bson:",inline"`
 }

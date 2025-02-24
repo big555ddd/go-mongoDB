@@ -10,11 +10,11 @@ type CreateUpdateUnixTimestamp struct {
 }
 
 type CreateUnixTimestamp struct {
-	CreatedAt int64 `json:"created_at" bson:"created_at"` // ลบ bun tags
+	CreatedAt int64 `json:"created_at" bson:"created_at"`
 }
 
 type UpdateUnixTimestamp struct {
-	UpdatedAt int64 `json:"updated_at" bson:"updated_at"` // ลบ bun tags
+	UpdatedAt int64 `json:"updated_at" bson:"updated_at"`
 }
 
 func (t *CreateUnixTimestamp) SetCreated(ts int64) {
