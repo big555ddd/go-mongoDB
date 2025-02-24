@@ -8,14 +8,11 @@ import (
 )
 
 func Init() {
-	// Load .env file
 	godotenv.Load()
-	viper.AutomaticEnv()
+	app()
 	logger.InitLogger()
 	Database()
-	app()
 	OAuth()
-	// Set up Viper to automatically use environment variables
 }
 
 func app() {

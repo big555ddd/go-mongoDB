@@ -3,10 +3,12 @@ package user
 import (
 	"app/app/request"
 	"app/app/response"
+	"app/internal/logger"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -49,6 +51,8 @@ func (ctl *Controller) Get(c *gin.Context) {
 		response.BadRequest(c, "id is required")
 		return
 	}
+
+	logger.Info(viper.GetString("APP_NAME"))
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
