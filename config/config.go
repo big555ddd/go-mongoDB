@@ -19,8 +19,6 @@ func app() {
 	viper.SetDefault("APP_PORT", "8080")
 	viper.SetDefault("APP_ENV", "development")
 
-	conf("APP_ENV", "development")
-	conf("APP_PORT", "8080")
 	conf("APP_NAME", "")
 	conf("DEBUG", "false")
 
